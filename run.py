@@ -156,8 +156,8 @@ def main(trader):
 
 
 if __name__ == '__main__':
-    with shift.Trader("test001") as trader:
-        trader.connect("initiator.cfg", "password")
+    with shift.Trader("sneakerhead_test01") as trader:
+        trader.connect("initiator.cfg", "7nn7Y1F5aj")
         sleep(1)
         trader.sub_all_order_book()
         sleep(1)
