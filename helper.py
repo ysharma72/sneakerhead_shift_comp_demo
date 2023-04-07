@@ -5,17 +5,39 @@ import datetime as dt
 from threading import Thread
 import math
 import numpy as np
+import pandas as pd
 import pandas_ta as ta
 
 # NOTE: for documentation on the different classes and methods used to interact with the SHIFT system, 
 # see: https://github.com/hanlonlab/shift-python/wiki
 
-def cancel_orders(trader, ticker):
-    # cancel all the remaining orders
-    for order in trader.get_waiting_list():
-        if (order.symbol == ticker):
-            trader.submit_cancellation(order)
-            sleep(1)  # the order cancellation needs a little time to go through
+check_frequency = 5
+max_bp = 1000000
+
+
+def cancel_orders(trader: shift.Trader, ticker: str, end_time=None):
+
+    if end_time is not None:
+        while trader.get_last_trade_time() < end_time:            
+            sleep(check_frequency)
+            # cancel all the remaining orders
+            for order in trader.get_submitted_orders():
+                if order.symbol == ticker:
+                    if (trader.get_last_trade_time() - order.timestamp) < timedelta(seconds=30):
+                        continue
+                    status = trader.get_order(order.id).status
+                    if status != shift.Order.Status.REJECTED and status != shift.Order.Status.FILLED:
+                        print(f'Cancelling pending orders for: {ticker}')
+                        trader.submit_cancellation(order)
+    else:
+        for order in trader.get_submitted_orders():
+                if order.symbol == ticker:
+                    status = trader.get_order(order.id).status
+                    if status != shift.Order.Status.REJECTED and status != shift.Order.Status.FILLED:
+                        print(f'Final cancel orders for: {ticker}')
+                        trader.submit_cancellation(order)
+
+    
 
 
 def close_positions(trader, ticker):
@@ -31,20 +53,24 @@ def close_positions(trader, ticker):
 
     # close any long positions
     long_shares = item.get_long_shares()
-    if long_shares > 0:
+    while long_shares != 0:
         print(f"market selling because {ticker} long shares = {long_shares}")
         order = shift.Order(shift.Order.Type.MARKET_SELL,
-                            ticker, int(long_shares/100))  # we divide by 100 because orders are placed for lots of 100 shares
+                            ticker, 1)  # we divide by 100 because orders are placed for lots of 100 shares
         trader.submit_order(order)
+        item = trader.get_portfolio_item(ticker)
+        long_shares = item.get_long_shares()
         sleep(1)  # we sleep to give time for the order to process
 
     # close any short positions
     short_shares = item.get_short_shares()
-    if short_shares > 0:
+    while short_shares != 0:
         print(f"market buying because {ticker} short shares = {short_shares}")
         order = shift.Order(shift.Order.Type.MARKET_BUY,
-                            ticker, int(short_shares/100))
+                            ticker, 1)
         trader.submit_order(order)
+        item = trader.get_portfolio_item(ticker)
+        short_shares = item.get_short_shares()
         sleep(1)
 
 
@@ -56,12 +82,16 @@ def calc_order_value(type, best_ask, best_bid, spread_percent):
     else:
         return best_ask - offset
 
+
+
 ## Technical Indicators
 
 # Strategy
 
 def RSI(lookback, prices):
-    rsi = ta.rsi(close=prices, length=lookback)[-1]
+    # prices = pd.Series(prices)
+    rsi = ta.rsi(close=prices, length=lookback)
+    rsi = rsi[-1]
 
     # rsi is a vector of 
 
@@ -74,22 +104,43 @@ def RSI(lookback, prices):
     # rsi = (100 - (100/(1+rs)))
     return rsi
 
-
-def VWAP(bid_price, ask_price, bid_vol, ask_vol):
+def RSI_conv_div(lookback, prices):
     
-    bid_vwap = sum(bid_price*bid_vol)/sum(bid_vol)
-    ask_vwap = sum(ask_price*ask_vol)/sum(ask_vol)
-    return (bid_vwap+ask_vwap) / 2
+    #Returns 1 if bullish and -1 if bearish
+
+    rsi = RSI(lookback, prices)
+
+    # Check for bullish convergence or bearish divergence
+    half_window = int(lookback/2)
+    half_rsi = rsi[-half_window:]
+    half_prices = prices[-half_window:]
+    is_increasing = half_prices.is_monotonic_increasing
+    is_decreasing = half_prices.is_monotonic_decreasing
+    if is_increasing and half_rsi.is_monotonic_decreasing:
+        return 1
+    elif is_decreasing and half_rsi.is_monotonic_increasing:
+        return -1
 
 
-def CrossoverMA(lookback1, lookback2, prices):
+
+def VWAP(bid_price, ask_price, bid_vol, ask_vol, multiplier):
+    bid_vwap = np.dot(bid_price, bid_vol) / sum(bid_vol)
+    ask_vwap = np.dot(ask_price, ask_vol) / sum(ask_vol)
+    vwap = (bid_vwap + ask_vwap) / 2
+    std = np.sqrt((np.dot(bid_vol, (bid_price - vwap) ** 2) + np.dot(ask_vol, (ask_price - vwap) ** 2)) / (sum(bid_vol) + sum(ask_vol)))
+    return [vwap - (multiplier * std), vwap, vwap + (multiplier * std)] #Returns a list of vwap, 2 standard deviations above and below the vwap
+
+
+
+def CompareMA(lookback1, lookback2, prices):
     # Check if Slow MA crosses over Fast MA
+    # prices = pd.Series(prices)
     ma_f = ta.sma(prices, length=lookback1)
     ma_s = ta.sma(prices, length=lookback2)
-    if (ma_f[-1] > ma_s[-1]) and (ma_f[-2:-1].values[0] < ma_s[-2:-1].values[0]):
-        return 1  # 1 for buy signal
-    elif (ma_f[-1] < ma_s[-1]) and (ma_f[-2:-1].values[0] > ma_s[-2:-1].values[0]):
-        return -1  # -1 for sell signal
+    if (ma_f[len(ma_f)-1] > ma_s[len(ma_s)-1]):
+        return 1  # 1 for uptrend confirmation
+    elif (ma_f[len(ma_f)-1] < ma_s[len(ma_s)-1]):
+        return -1  # -1 for downtrend confirm
     else: return 0  # otherwise, no signal
 
 
