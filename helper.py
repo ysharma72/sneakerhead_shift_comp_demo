@@ -58,9 +58,14 @@ def close_positions(trader, ticker):
         order = shift.Order(shift.Order.Type.MARKET_SELL,
                             ticker, 1)  # we divide by 100 because orders are placed for lots of 100 shares
         trader.submit_order(order)
+        sleep(check_frequency)
+        status = trader.get_order(order.id).status
+        if status != shift.Order.Status.REJECTED and status != shift.Order.Status.FILLED:
+            print(f'Cancelling pending orders for: {ticker}')
+            trader.submit_cancellation(order)
         item = trader.get_portfolio_item(ticker)
         long_shares = item.get_long_shares()
-        sleep(1)  # we sleep to give time for the order to process
+        sleep(check_frequency)  # we sleep to give time for the order to process
 
     # close any short positions
     short_shares = item.get_short_shares()
@@ -69,9 +74,14 @@ def close_positions(trader, ticker):
         order = shift.Order(shift.Order.Type.MARKET_BUY,
                             ticker, 1)
         trader.submit_order(order)
+        sleep(check_frequency)
+        status = trader.get_order(order.id).status
+        if status != shift.Order.Status.REJECTED and status != shift.Order.Status.FILLED:
+            print(f'Cancelling pending orders for: {ticker}')
+            trader.submit_cancellation(order)
         item = trader.get_portfolio_item(ticker)
         short_shares = item.get_short_shares()
-        sleep(1)
+        sleep(check_frequency)
 
 
 def calc_order_value(type, best_ask, best_bid, spread_percent):

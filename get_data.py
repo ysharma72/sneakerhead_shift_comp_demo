@@ -11,12 +11,12 @@ def main(trader):
     check_frequency = 5
     current = trader.get_last_trade_time()
     start_time = dt.datetime.combine(current, dt.time(9, 30, 0))
-    end_time = dt.datetime.combine(current, dt.time(15, 45, 0))
+    end_time = dt.datetime.combine(current, dt.time(15, 0, 0))
     
     # start_time = current
     # end_time = start_time + timedelta(minutes=1)
 
-    while trader.get_last_trade_time() < start_time:
+    while trader.get_last_trade_time() < start_time or trader.get_last_trade_time() > end_time:
         print("Waiting for market to open")
         sleep(check_frequency)
 
@@ -30,7 +30,9 @@ def main(trader):
     big_df = pd.DataFrame(columns=pd.MultiIndex.from_product([tickers, lower_columns]))
 
     while(trader.get_last_trade_time() < end_time):
+        
         if trader.is_connected():
+            print(f"connected: {trader.get_last_trade_time()}")
             big_df.loc[trader.get_last_trade_time()] = get_data(tickers, current_data)
         sleep(check_frequency)
         
@@ -64,7 +66,7 @@ def get_data(tickers, current_data):
         
 
 if __name__ == "__main__":
-    with shift.Trader("sneakerhead_test20") as trader:
+    with shift.Trader("sneakerhead_test01") as trader:
         trader.connect("initiator.cfg", "7nn7Y1F5aj")
         sleep(1)
         trader.sub_all_order_book()

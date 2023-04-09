@@ -19,7 +19,7 @@ def main(trader):
     # start_time2 = datetime.combine(current, dt.time(10, 0, 0))
     # end_time2 = datetime.combine(current, dt.time(3, 45, 0))
     start_time2 = current
-    end_time2 = start_time2 + timedelta(hours=2)
+    end_time2 = start_time2 + timedelta(minutes=5)
 
     # while trader.get_last_trade_time() < start_time1:
     #     print("Waiting for market to open")
