@@ -18,17 +18,20 @@ max_bp = 1000000
 def cancel_orders(trader: shift.Trader, ticker: str, end_time=None):
 
     if end_time is not None:
-        while trader.get_last_trade_time() < end_time:            
-            sleep(check_frequency)
-            # cancel all the remaining orders
-            for order in trader.get_submitted_orders():
-                if order.symbol == ticker:
-                    if (trader.get_last_trade_time() - order.timestamp) < timedelta(seconds=30):
-                        continue
-                    status = trader.get_order(order.id).status
-                    if status != shift.Order.Status.REJECTED and status != shift.Order.Status.FILLED:
-                        print(f'Cancelling pending orders for: {ticker}')
-                        trader.submit_cancellation(order)
+        while trader.get_last_trade_time() < end_time:
+            try:            
+                sleep(check_frequency)
+                # cancel all the remaining orders
+                for order in trader.get_submitted_orders():
+                    if order.symbol == ticker:
+                        if (trader.get_last_trade_time() - order.timestamp) < timedelta(seconds=30):
+                            continue
+                        status = trader.get_order(order.id).status
+                        if status != shift.Order.Status.REJECTED and status != shift.Order.Status.FILLED:
+                            print(f'Cancelling pending orders for: {ticker}')
+                            trader.submit_cancellation(order)
+            except Exception as e:
+                print(f"Error in cancel_orders: {e}")
     else:
         for order in trader.get_submitted_orders():
                 if order.symbol == ticker:
@@ -55,42 +58,50 @@ def close_positions(trader, ticker):
     long_shares = item.get_long_shares()
     while long_shares != 0:
         print(f"market selling because {ticker} long shares = {long_shares}")
-        order = shift.Order(shift.Order.Type.MARKET_SELL,
-                            ticker, 1)  # we divide by 100 because orders are placed for lots of 100 shares
-        trader.submit_order(order)
-        sleep(check_frequency)
-        status = trader.get_order(order.id).status
-        if status != shift.Order.Status.REJECTED and status != shift.Order.Status.FILLED:
-            print(f'Cancelling pending orders for: {ticker}')
-            trader.submit_cancellation(order)
-        item = trader.get_portfolio_item(ticker)
-        long_shares = item.get_long_shares()
+
+        try:
+            order = shift.Order(shift.Order.Type.MARKET_SELL,
+                                ticker, 1)  # we divide by 100 because orders are placed for lots of 100 shares
+            trader.submit_order(order)
+            sleep(check_frequency)
+            status = trader.get_order(order.id).status
+            if status != shift.Order.Status.REJECTED and status != shift.Order.Status.FILLED:
+                print(f'Cancelling pending orders for: {ticker}')
+                trader.submit_cancellation(order)
+            item = trader.get_portfolio_item(ticker)
+            long_shares = item.get_long_shares()
+        except Exception as e:
+            print("Error in close_positions: ", e)
+            
         sleep(check_frequency)  # we sleep to give time for the order to process
 
     # close any short positions
     short_shares = item.get_short_shares()
     while short_shares != 0:
         print(f"market buying because {ticker} short shares = {short_shares}")
-        order = shift.Order(shift.Order.Type.MARKET_BUY,
-                            ticker, 1)
-        trader.submit_order(order)
-        sleep(check_frequency)
-        status = trader.get_order(order.id).status
-        if status != shift.Order.Status.REJECTED and status != shift.Order.Status.FILLED:
-            print(f'Cancelling pending orders for: {ticker}')
-            trader.submit_cancellation(order)
-        item = trader.get_portfolio_item(ticker)
-        short_shares = item.get_short_shares()
-        sleep(check_frequency)
+        
+        try:
+            order = shift.Order(shift.Order.Type.MARKET_BUY,
+                                ticker, 1)
+            trader.submit_order(order)
+            sleep(check_frequency)
+            status = trader.get_order(order.id).status
+            if status != shift.Order.Status.REJECTED and status != shift.Order.Status.FILLED:
+                print(f'Cancelling pending orders for: {ticker}')
+                trader.submit_cancellation(order)
+            item = trader.get_portfolio_item(ticker)
+            short_shares = item.get_short_shares()
+        except Exception as e:
+            print("Error in close_positions: ", e)
+
+        sleep(check_frequency) # we sleep to give time for the order to process
 
 
 def calc_order_value(type, best_ask, best_bid, spread_percent):
     spread = (best_ask - best_bid)
     offset = math.ceil(spread * spread_percent)
-    if type == shift.Order.Type.LIMIT_BUY:
-        return best_bid + offset
-    else:
-        return best_ask - offset
+    # Cuz ternary operator OP
+    return best_bid + offset if type == shift.Order.Type.LIMIT_BUY else best_ask - offset
 
 
 

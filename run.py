@@ -5,7 +5,7 @@ import datetime as dt
 from threading import Thread
 
 from helper import cancel_orders, close_positions
-from strategy_TI import strategyTI
+from strategy_TI import *
 from strategy_rebate import *
 
 check_frequency = 5
@@ -83,17 +83,20 @@ def main(trader):
     
     for ticker in tickers:
         # initializes threads containing the strategy for each ticker
+        # threads2.append(
+        #     Thread(target=longTrades, args=(trader, ticker, end_time2))
+        # )
+        # threads2.append(
+        #     Thread(target=shortTrades, args=(trader, ticker, end_time2))
+        # )
+        # threads2.append(
+        #     Thread(target=cancel_orders, args=(trader, ticker, end_time2))
+        # )
+        # threads2.append(
+        #     Thread(target=manage_holdings, args=(trader, ticker, end_time2))
+        # )
         threads2.append(
-            Thread(target=longTrades, args=(trader, ticker, end_time2))
-        )
-        threads2.append(
-            Thread(target=shortTrades, args=(trader, ticker, end_time2))
-        )
-        threads2.append(
-            Thread(target=cancel_orders, args=(trader, ticker, end_time2))
-        )
-        threads2.append(
-            Thread(target=manage_holdings, args=(trader, ticker, end_time2))
+            Thread(target=strategyTI, args=(trader, ticker, end_time2))
         )
     
 
@@ -201,7 +204,7 @@ def main(trader):
 
 
 if __name__ == '__main__':
-    with shift.Trader("sneakerhead_test07") as trader:
+    with shift.Trader("sneakerhead_test08") as trader:
         trader.connect("initiator.cfg", "7nn7Y1F5aj")
         sleep(1)
         trader.sub_all_order_book()

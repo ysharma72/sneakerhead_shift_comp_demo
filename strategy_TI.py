@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import datetime as dt
 from threading import Thread
 from helper import *
+import pandas as pd
 
 
 
@@ -16,7 +17,7 @@ def strategyTI(trader: shift.Trader, ticker: str, endtime):
     initial_pl = trader.get_portfolio_item(ticker).get_realized_pl()
 
     # strategy parameters
-    check_freq = 60  # this iterates every 60 seconds
+    check_freq = 1  # this iterates every 60 seconds
     order_size = 3  # NOTE: this is 3 lots which is 300 shares.
 
     # strategy variables        
