@@ -8,7 +8,7 @@ from helper import cancel_orders, close_positions
 from strategy_TI import *
 from strategy_rebate import *
 
-check_frequency = 5
+check_frequency = 15
 
 def main(trader):
     # keeps track of times for the simulation
@@ -19,7 +19,7 @@ def main(trader):
     # start_time2 = datetime.combine(current, dt.time(10, 0, 0))
     # end_time2 = datetime.combine(current, dt.time(3, 45, 0))
     start_time2 = current
-    end_time2 = start_time2 + timedelta(minutes=5)
+    end_time2 = start_time2 + timedelta(minutes=30)
 
     # while trader.get_last_trade_time() < start_time1:
     #     print("Waiting for market to open")
@@ -76,27 +76,38 @@ def main(trader):
 
     # in this example, we simultaneously and independantly run our trading alogirthm on ALL tickers
     # tickers = trader.get_stock_list()
-    tickers = ["CVX", "AXP", "CSCO", "DIS", "AAPL", "AMGN", "JPM", "KO", "CRM", "V"]
-
+    tickers_TI = ["JPM", "GS", "BA", "XOM"]
+    tickers_rebate = ["KO", "JNJ", "PG", "WMT"]
     print("START")
 
+    # Om is a loading screen
     
-    for ticker in tickers:
+    for ticker in tickers_TI:
         # initializes threads containing the strategy for each ticker
-        # threads2.append(
-        #     Thread(target=longTrades, args=(trader, ticker, end_time2))
-        # )
-        # threads2.append(
-        #     Thread(target=shortTrades, args=(trader, ticker, end_time2))
-        # )
-        # threads2.append(
-        #     Thread(target=cancel_orders, args=(trader, ticker, end_time2))
-        # )
-        # threads2.append(
-        #     Thread(target=manage_holdings, args=(trader, ticker, end_time2))
-        # )
         threads2.append(
             Thread(target=strategyTI, args=(trader, ticker, end_time2))
+        )
+        threads2.append(
+            Thread(target=cancel_orders, args=(trader, ticker, end_time2))
+        )
+        threads2.append(
+            Thread(target=manage_holdings, args=(trader, ticker, end_time2, -0.04, 0.05))
+        )
+        
+
+    for ticker in tickers_rebate:
+        # initializes threads containing the strategy for each ticker
+        threads2.append(
+            Thread(target=longTrades, args=(trader, ticker, end_time2))
+        )
+        threads2.append(
+            Thread(target=shortTrades, args=(trader, ticker, end_time2))
+        )
+        threads2.append(
+            Thread(target=cancel_orders, args=(trader, ticker, end_time2))
+        )
+        threads2.append(
+            Thread(target=manage_holdings, args=(trader, ticker, end_time2, -0.002, 0.004))
         )
     
 
@@ -148,14 +159,19 @@ def main(trader):
         thread.join()
 
     # make sure all remaining orders have been cancelled and all positions have been closed
-    for ticker in tickers:
+    for ticker in tickers_TI:
         cancel_orders(trader, ticker)
         close_positions(trader, ticker)
 
-    sleep(check_frequency*3)
+    for ticker in tickers_rebate:
+        cancel_orders(trader, ticker)
+        close_positions(trader, ticker)
 
-    ordercounts = {}
-    for ticker in tickers:
+    sleep(check_frequency)
+
+    ordercounts_TI = {}
+    ordercounts_rebate = {}
+    for ticker in tickers_TI:
         lots = 0
         for order in trader.get_submitted_orders():
             if order.symbol == ticker:
@@ -163,9 +179,21 @@ def main(trader):
                 if status == shift.Order.Status.FILLED or status == shift.Order.Status.PARTIALLY_FILLED:
                     lots += order.executed_size
 
-        ordercounts[ticker] = lots
+        ordercounts_TI[ticker] = lots
+
+    for ticker in tickers_rebate:
+        lots = 0
+        for order in trader.get_submitted_orders():
+            if order.symbol == ticker:
+                status = trader.get_order(order.id).status
+                if status == shift.Order.Status.FILLED or status == shift.Order.Status.PARTIALLY_FILLED:
+                    lots += order.executed_size
+
+        ordercounts_rebate[ticker] = lots
+
     
-    print(f'Order counts: {ordercounts}')
+    print(f'Order counts TI: {ordercounts_TI}')
+    print(f'Order counts rebate: {ordercounts_rebate}')
 
     sleep(15)
 
@@ -204,7 +232,7 @@ def main(trader):
 
 
 if __name__ == '__main__':
-    with shift.Trader("sneakerhead_test08") as trader:
+    with shift.Trader("sneakerhead_test03") as trader:
         trader.connect("initiator.cfg", "7nn7Y1F5aj")
         sleep(1)
         trader.sub_all_order_book()

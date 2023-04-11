@@ -8,7 +8,7 @@ from threading import Thread
 
 def main(trader):
     tickers = trader.get_stock_list()
-    check_frequency = 5
+    check_frequency = 15
     current = trader.get_last_trade_time()
     start_time = dt.datetime.combine(current, dt.time(9, 30, 0))
     end_time = dt.datetime.combine(current, dt.time(15, 0, 0))

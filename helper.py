@@ -11,9 +11,25 @@ import pandas_ta as ta
 # NOTE: for documentation on the different classes and methods used to interact with the SHIFT system, 
 # see: https://github.com/hanlonlab/shift-python/wiki
 
-check_frequency = 5
+check_frequency = 15
 max_bp = 1000000
 
+
+def manage_holdings(trader: shift.Trader, ticker: str, end_time, loss, gain):
+    while trader.get_last_trade_time() < end_time:            
+        sleep(check_frequency)
+        try:
+            item = trader.get_portfolio_item(ticker)
+            total_og_value = (item.get_long_shares()*item.get_long_price()) - (item.get_short_shares()*item.get_short_price())
+            if total_og_value == 0: pl = 0
+            else: pl = trader.get_unrealized_pl(ticker) / total_og_value
+            # print(f'Unrealized pl {ticker}: {pl}')
+            if pl > gain or pl < loss:
+                print(f'Closing positions for: {ticker}')
+                close_positions(trader, ticker)
+        except Exception as e:
+            print("Error in manage_holdings: ", e)
+            continue
 
 def cancel_orders(trader: shift.Trader, ticker: str, end_time=None):
 
