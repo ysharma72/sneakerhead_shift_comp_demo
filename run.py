@@ -8,7 +8,7 @@ from helper import cancel_orders, close_positions
 from strategy_TI import *
 from strategy_rebate import *
 
-check_frequency = 15
+check_frequency = 5
 
 def main(trader):
     # keeps track of times for the simulation
@@ -19,7 +19,7 @@ def main(trader):
     # start_time2 = datetime.combine(current, dt.time(10, 0, 0))
     # end_time2 = datetime.combine(current, dt.time(3, 45, 0))
     start_time2 = current
-    end_time2 = start_time2 + timedelta(minutes=30)
+    end_time2 = start_time2 + timedelta(hours=1)
 
     # while trader.get_last_trade_time() < start_time1:
     #     print("Waiting for market to open")
@@ -121,7 +121,7 @@ def main(trader):
     while trader.get_last_trade_time() < end_time2:
 
         # Every 30 seconds, log current time
-        if count_ticks % 6 == 0:
+        if count_ticks % 60 == 0:
             print(f"Current time: {trader.get_last_trade_time()}")
             # Print current portfolio summary as well
             print("Buying Power\tTotal Shares\tTotal P&L\tTimestamp")
@@ -156,7 +156,7 @@ def main(trader):
     for thread in threads2:
         # NOTE: this method can stall your program indefinitely if your strategy does not terminate naturally
         # setting the timeout argument for join() can prevent this
-        thread.join()
+        thread.join(timeout=check_frequency)
 
     # make sure all remaining orders have been cancelled and all positions have been closed
     for ticker in tickers_TI:
@@ -232,7 +232,7 @@ def main(trader):
 
 
 if __name__ == '__main__':
-    with shift.Trader("sneakerhead_test03") as trader:
+    with shift.Trader("sneakerhead_test04") as trader:
         trader.connect("initiator.cfg", "7nn7Y1F5aj")
         sleep(1)
         trader.sub_all_order_book()
