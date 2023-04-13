@@ -19,7 +19,7 @@ def main(trader):
     # start_time2 = datetime.combine(current, dt.time(10, 0, 0))
     # end_time2 = datetime.combine(current, dt.time(3, 45, 0))
     start_time2 = current
-    end_time2 = start_time2 + timedelta(hours=1)
+    end_time2 = start_time2 + timedelta(hours=3)
 
     # while trader.get_last_trade_time() < start_time1:
     #     print("Waiting for market to open")
@@ -232,7 +232,7 @@ def main(trader):
 
 
 if __name__ == '__main__':
-    with shift.Trader("sneakerhead_test04") as trader:
+    with shift.Trader("sneakerhead_test02") as trader:
         trader.connect("initiator.cfg", "7nn7Y1F5aj")
         sleep(1)
         trader.sub_all_order_book()

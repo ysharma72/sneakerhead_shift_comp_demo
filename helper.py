@@ -14,6 +14,11 @@ import pandas_ta as ta
 check_frequency = 5
 max_bp = 1000000
 
+def calc_order_value(type, best_ask, best_bid, spread_percent):
+    spread = (best_ask - best_bid)
+    offset = math.ceil(spread * spread_percent)
+    # Cuz ternary operator OP
+    return best_bid + offset if type == shift.Order.Type.LIMIT_BUY else best_ask - offset
 
 def manage_holdings(trader: shift.Trader, ticker: str, end_time, loss, gain):
     while trader.get_last_trade_time() < end_time:            
@@ -69,15 +74,19 @@ def close_positions(trader, ticker):
     print(f"running close positions function for {ticker}")
 
     item = trader.get_portfolio_item(ticker)
-
+    
     # close any long positions
     long_shares = item.get_long_shares()
     while long_shares != 0:
         print(f"market selling because {ticker} long shares = {long_shares}")
-
+        
         try:
-            order = shift.Order(shift.Order.Type.MARKET_SELL,
-                                ticker, 1)  # we divide by 100 because orders are placed for lots of 100 shares
+            best_price = trader.get_best_price(ticker)
+            best_bid = best_price.get_bid_price()
+            best_ask = best_price.get_ask_price()
+            sell_vol = long_shares if long_shares < 3 else 3
+            order = shift.Order(shift.Order.Type.LIMIT_SELL,
+                                ticker, sell_vol, price=calc_order_value(shift.Order.Type.LIMIT_SELL, best_ask, best_bid, 0.5))  # we divide by 100 because orders are placed for lots of 100 shares
             trader.submit_order(order)
             sleep(check_frequency)
             status = trader.get_order(order.id).status
@@ -97,8 +106,12 @@ def close_positions(trader, ticker):
         print(f"market buying because {ticker} short shares = {short_shares}")
         
         try:
-            order = shift.Order(shift.Order.Type.MARKET_BUY,
-                                ticker, 1)
+            best_price = trader.get_best_price(ticker)
+            best_bid = best_price.get_bid_price()
+            best_ask = best_price.get_ask_price()
+            buy_vol = short_shares if short_shares < 3 else 3
+            order = shift.Order(shift.Order.Type.LIMIT_BUY,
+                                ticker, buy_vol, price=calc_order_value(shift.Order.Type.LIMIT_BUY, best_ask, best_bid, 0.5))
             trader.submit_order(order)
             sleep(check_frequency)
             status = trader.get_order(order.id).status
@@ -113,11 +126,7 @@ def close_positions(trader, ticker):
         sleep(check_frequency) # we sleep to give time for the order to process
 
 
-def calc_order_value(type, best_ask, best_bid, spread_percent):
-    spread = (best_ask - best_bid)
-    offset = math.ceil(spread * spread_percent)
-    # Cuz ternary operator OP
-    return best_bid + offset if type == shift.Order.Type.LIMIT_BUY else best_ask - offset
+
 
 
 

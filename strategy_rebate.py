@@ -16,9 +16,9 @@ max_alloc = ((starting_power / 4) * 0.99) / 3
 # starting_power / number of tickers
 # multiply by 0.99 for some buffer
 # divide by 3 so 1 part for long allocation, 2 parts for short allocation
-max_lots = 12
+max_lots = 50
 check_freq = 5
-order_size = 1  # NOTE: this is 3 lots which is 300 shares, so we earn 60 cents per trade.
+order_size = 3  # NOTE: this is 3 lots which is 300 shares, so we earn 60 cents per trade.
 
 
 def longTrades(trader: shift.Trader, ticker: str, endtime):

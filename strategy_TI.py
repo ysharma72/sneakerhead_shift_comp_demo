@@ -19,7 +19,7 @@ def strategyTI(trader: shift.Trader, ticker: str, endtime):
 
     # strategy parameters
     check_freq = 5  # this iterates every 60 seconds
-    order_size = 1  # NOTE: this is 3 lots which is 300 shares.
+    order_size = 3  # NOTE: this is 3 lots which is 300 shares.
 
     # strategy variables  
     trending_buy, trending_sell = False, False
@@ -78,13 +78,13 @@ def strategyTI(trader: shift.Trader, ticker: str, endtime):
                 
             if rsi > 70 and price > vwap_upper and (2*max_alloc > current_value_short and max_lots*100 > abs(item.get_shares())):
                 print('LONG TERM RSI SELL ENTRY')
-                order = shift.Order(shift.Order.Type.LIMIT_SELL, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_SELL, best_ask, best_bid, 0.75))
+                order = shift.Order(shift.Order.Type.LIMIT_SELL, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_SELL, best_ask, best_bid, 0.5))
                 print(f"TI: Selling {ticker} at {best_bid}")
                 trader.submit_order(order)
                 long_term_sell = True
             elif rsi < 30 and price < vwap_lower and (max_alloc > current_value_long and max_lots*100 > abs(item.get_shares())):
                 print('LONG TERM RSI BUY ENTRY')
-                order = shift.Order(shift.Order.Type.LIMIT_BUY, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_BUY, best_ask, best_bid, 0.75))
+                order = shift.Order(shift.Order.Type.LIMIT_BUY, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_BUY, best_ask, best_bid, 0.5))
                 print(f"TI: Buying {ticker} at {best_ask}")
                 trader.submit_order(order)
                 long_term_buy = True
@@ -92,13 +92,13 @@ def strategyTI(trader: shift.Trader, ticker: str, endtime):
             #Getting out of long term trades
             if long_term_sell and rsi in range(30, 45) and (max_alloc > current_value_long and max_lots*100 > abs(item.get_shares())):
                 print('LONG TERM BUYBACK EXIT')
-                order = shift.Order(shift.Order.Type.LIMIT_BUY, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_BUY, best_ask, best_bid, 0.75))
+                order = shift.Order(shift.Order.Type.LIMIT_BUY, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_BUY, best_ask, best_bid, 0.5))
                 print(f"TI: Buying {ticker} at {best_ask}")
                 trader.submit_order(order)
             
             if long_term_buy and rsi in range(55, 70) and (2*max_alloc > current_value_short and max_lots*100 > abs(item.get_shares())):
                 print('LONG TERM SELL EXIT')
-                order = shift.Order(shift.Order.Type.LIMIT_SELL, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_SELL, best_ask, best_bid, 0.75))
+                order = shift.Order(shift.Order.Type.LIMIT_SELL, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_SELL, best_ask, best_bid, 0.5))
                 print(f"TI: Selling {ticker} at {best_bid}")
                 trader.submit_order(order)
                 
@@ -108,13 +108,13 @@ def strategyTI(trader: shift.Trader, ticker: str, endtime):
             if ma < 0 and price > vwap_upper and (2*max_alloc > current_value_short and max_lots*100 > abs(item.get_shares())):
                 print('TRENDING SELL ENTRY')
                 #Price is very far above VWAP but moving averages cross down, sell
-                order = shift.Order(shift.Order.Type.LIMIT_SELL, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_SELL, best_ask, best_bid, 0.75))
+                order = shift.Order(shift.Order.Type.LIMIT_SELL, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_SELL, best_ask, best_bid, 0.5))
                 print(f"TI: Selling {ticker} at {best_bid}")
                 trader.submit_order(order)
                 trending_sell = True
             elif ma > 0 and price < vwap_lower and (max_alloc > current_value_long and max_lots*100 > abs(item.get_shares())): #Price is very far below VWAP but moving averages cross up, buy
                 print('TRENDING BUY ENTRY')
-                order = shift.Order(shift.Order.Type.LIMIT_BUY, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_BUY, best_ask, best_bid, 0.75))
+                order = shift.Order(shift.Order.Type.LIMIT_BUY, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_BUY, best_ask, best_bid, 0.5))
                 print(f"TI: Buying {ticker} at {best_ask}")
                 trader.submit_order(order)
                 trending_buy = True
@@ -122,7 +122,7 @@ def strategyTI(trader: shift.Trader, ticker: str, endtime):
             # Getting out of trending trades
             if trending_sell and (price > vwap[1] and price < vwap[2]) and (max_alloc > current_value_long and max_lots*100 > abs(item.get_shares())):
                 print('TRENDING BUYBACK EXIT')
-                order = shift.Order(shift.Order.Type.LIMIT_BUY, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_BUY, best_ask, best_bid, 0.75))
+                order = shift.Order(shift.Order.Type.LIMIT_BUY, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_BUY, best_ask, best_bid, 0.5))
                 print(f"TI: Buying {ticker} at {best_ask}")
                 trader.submit_order(order)
                 trending_sell = False
@@ -130,7 +130,7 @@ def strategyTI(trader: shift.Trader, ticker: str, endtime):
             
             if trending_buy and (price > vwap[0] and price < vwap[1]) and (2*max_alloc > current_value_short and max_lots*100 > abs(item.get_shares())):
                 print('TRENDING SELL EXIT')
-                order = shift.Order(shift.Order.Type.LIMIT_SELL, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_SELL, best_ask, best_bid, 0.75))
+                order = shift.Order(shift.Order.Type.LIMIT_SELL, ticker, order_size, price=calc_order_value(shift.Order.Type.LIMIT_SELL, best_ask, best_bid, 0.5))
                 print(f"TI: Selling {ticker} at {best_bid}")
                 trader.submit_order(order)
                 trending_buy = False
