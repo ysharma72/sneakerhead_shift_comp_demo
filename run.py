@@ -7,8 +7,9 @@ from threading import Thread
 from helper import cancel_orders, close_positions
 from strategy_TI import *
 from strategy_rebate import *
+from strategy_rebate2 import *
 
-check_frequency = 5
+check_frequency = 15
 
 def main(trader):
     # keeps track of times for the simulation
@@ -19,7 +20,7 @@ def main(trader):
     # start_time2 = datetime.combine(current, dt.time(10, 0, 0))
     # end_time2 = datetime.combine(current, dt.time(3, 45, 0))
     start_time2 = current
-    end_time2 = start_time2 + timedelta(hours=3)
+    end_time2 = start_time2 + timedelta(minutes=10)
 
     # while trader.get_last_trade_time() < start_time1:
     #     print("Waiting for market to open")
@@ -77,38 +78,42 @@ def main(trader):
     # in this example, we simultaneously and independantly run our trading alogirthm on ALL tickers
     # tickers = trader.get_stock_list()
     tickers_TI = ["JPM", "GS", "BA", "XOM"]
-    tickers_rebate = ["KO", "JNJ", "PG", "WMT"]
+    # tickers_rebate = ["KO", "JNJ", "PG", "WMT"]
+    tickers_rebate = ["PG"]
     print("START")
 
     # Om is a loading screen
     
-    for ticker in tickers_TI:
-        # initializes threads containing the strategy for each ticker
-        threads2.append(
-            Thread(target=strategyTI, args=(trader, ticker, end_time2))
-        )
-        threads2.append(
-            Thread(target=cancel_orders, args=(trader, ticker, end_time2))
-        )
-        threads2.append(
-            Thread(target=manage_holdings, args=(trader, ticker, end_time2, -0.04, 0.05))
-        )
+    # for ticker in tickers_TI:
+    #     # initializes threads containing the strategy for each ticker
+    #     threads2.append(
+    #         Thread(target=strategyTI, args=(trader, ticker, end_time2))
+    #     )
+    #     threads2.append(
+    #         Thread(target=cancel_orders, args=(trader, ticker, end_time2))
+    #     )
+    #     threads2.append(
+    #         Thread(target=manage_holdings, args=(trader, ticker, end_time2, -0.04, 0.05))
+    #     )
         
 
     for ticker in tickers_rebate:
         # initializes threads containing the strategy for each ticker
+        # threads2.append(
+        #     Thread(target=longTrades, args=(trader, ticker, end_time2))
+        # )
+        # threads2.append(
+        #     Thread(target=shortTrades, args=(trader, ticker, end_time2))
+        # )
         threads2.append(
-            Thread(target=longTrades, args=(trader, ticker, end_time2))
+            Thread(target=func, args=(trader, ticker, end_time2))
         )
-        threads2.append(
-            Thread(target=shortTrades, args=(trader, ticker, end_time2))
-        )
-        threads2.append(
-            Thread(target=cancel_orders, args=(trader, ticker, end_time2))
-        )
-        threads2.append(
-            Thread(target=manage_holdings, args=(trader, ticker, end_time2, -0.002, 0.004))
-        )
+        # threads2.append(
+        #     Thread(target=cancel_orders, args=(trader, ticker, end_time2))
+        # )
+        # threads2.append(
+        #     Thread(target=manage_holdings, args=(trader, ticker, end_time2, -0.002, 0.004))
+        # )
     
 
     for thread in threads2:
@@ -121,32 +126,36 @@ def main(trader):
     while trader.get_last_trade_time() < end_time2:
 
         # Every 30 seconds, log current time
-        if count_ticks % 60 == 0:
-            print(f"Current time: {trader.get_last_trade_time()}")
-            # Print current portfolio summary as well
-            print("Buying Power\tTotal Shares\tTotal P&L\tTimestamp")
-            print(
-                "%12.2f\t%12d\t%9.2f\t%26s"
-                % (
-                    trader.get_portfolio_summary().get_total_bp(),
-                    trader.get_portfolio_summary().get_total_shares(),
-                    trader.get_portfolio_summary().get_total_realized_pl(),
-                    trader.get_portfolio_summary().get_timestamp(),
-                )
-            )
-
-            print("Symbol\t\tShares\t\tPrice\t\tP&L\t\tTimestamp")
+        if count_ticks % 2 == 0:
             for item in trader.get_portfolio_items().values():
-                print(
-                    "%6s\t\t%6d\t%9.2f\t%7.2f\t\t%26s"
-                    % (
-                        item.get_symbol(),
-                        item.get_shares(),
-                        item.get_price(),
-                        item.get_realized_pl(),
-                        item.get_timestamp(),
-                    )
-                )
+                print(f"current holding: {item.get_shares()}")
+                print(f"Current PNL: {item.get_realized_pl()}")
+            print(f"Total shares traded: {trader.get_portfolio_summary().get_total_shares()}\n")
+            # print(f"Current time: {trader.get_last_trade_time()}")
+            # # Print current portfolio summary as well
+            # print("Buying Power\tTotal Shares\tTotal P&L\tTimestamp")
+            # print(
+            #     "%12.2f\t%12d\t%9.2f\t%26s"
+            #     % (
+            #         trader.get_portfolio_summary().get_total_bp(),
+            #         trader.get_portfolio_summary().get_total_shares(),
+            #         trader.get_portfolio_summary().get_total_realized_pl(),
+            #         trader.get_portfolio_summary().get_timestamp(),
+            #     )
+            # )
+
+            # print("Symbol\t\tShares\t\tPrice\t\tP&L\t\tTimestamp")
+            # for item in trader.get_portfolio_items().values():
+            #     print(
+            #         "%6s\t\t%6d\t%9.2f\t%7.2f\t\t%26s"
+            #         % (
+            #             item.get_symbol(),
+            #             item.get_shares(),
+            #             item.get_price(),
+            #             item.get_realized_pl(),
+            #             item.get_timestamp(),
+            #         )
+            #     )
 
         count_ticks += 1
 
@@ -159,9 +168,9 @@ def main(trader):
         thread.join(timeout=check_frequency)
 
     # make sure all remaining orders have been cancelled and all positions have been closed
-    for ticker in tickers_TI:
-        cancel_orders(trader, ticker)
-        close_positions(trader, ticker)
+    # for ticker in tickers_TI:
+    #     cancel_orders(trader, ticker)
+    #     close_positions(trader, ticker)
 
     for ticker in tickers_rebate:
         cancel_orders(trader, ticker)
@@ -171,15 +180,15 @@ def main(trader):
 
     ordercounts_TI = {}
     ordercounts_rebate = {}
-    for ticker in tickers_TI:
-        lots = 0
-        for order in trader.get_submitted_orders():
-            if order.symbol == ticker:
-                status = trader.get_order(order.id).status
-                if status == shift.Order.Status.FILLED or status == shift.Order.Status.PARTIALLY_FILLED:
-                    lots += order.executed_size
+    # for ticker in tickers_TI:
+    #     lots = 0
+    #     for order in trader.get_submitted_orders():
+    #         if order.symbol == ticker:
+    #             status = trader.get_order(order.id).status
+    #             if status == shift.Order.Status.FILLED or status == shift.Order.Status.PARTIALLY_FILLED:
+    #                 lots += order.executed_size
 
-        ordercounts_TI[ticker] = lots
+    #     ordercounts_TI[ticker] = lots
 
     for ticker in tickers_rebate:
         lots = 0
@@ -192,7 +201,7 @@ def main(trader):
         ordercounts_rebate[ticker] = lots
 
     
-    print(f'Order counts TI: {ordercounts_TI}')
+    # print(f'Order counts TI: {ordercounts_TI}')
     print(f'Order counts rebate: {ordercounts_rebate}')
 
     sleep(15)
@@ -232,7 +241,7 @@ def main(trader):
 
 
 if __name__ == '__main__':
-    with shift.Trader("sneakerhead_test02") as trader:
+    with shift.Trader("sneakerhead_test10") as trader:
         trader.connect("initiator.cfg", "7nn7Y1F5aj")
         sleep(1)
         trader.sub_all_order_book()

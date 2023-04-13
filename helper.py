@@ -11,7 +11,7 @@ import pandas_ta as ta
 # NOTE: for documentation on the different classes and methods used to interact with the SHIFT system, 
 # see: https://github.com/hanlonlab/shift-python/wiki
 
-check_frequency = 5
+check_frequency = 15
 max_bp = 1000000
 
 def calc_order_value(type, best_ask, best_bid, spread_percent):
