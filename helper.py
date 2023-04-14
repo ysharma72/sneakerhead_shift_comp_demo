@@ -11,7 +11,7 @@ import pandas_ta as ta
 # NOTE: for documentation on the different classes and methods used to interact with the SHIFT system, 
 # see: https://github.com/hanlonlab/shift-python/wiki
 
-check_frequency = 15
+check_frequency = 1
 max_bp = 1000000
 
 def calc_order_value(type, best_ask, best_bid, spread_percent):
@@ -188,7 +188,6 @@ def CompareMA(lookback1, lookback2, prices):
     elif (ma_f[len(ma_f)-1] < ma_s[len(ma_s)-1]):
         return -1  # -1 for downtrend confirm
     else: return 0  # otherwise, no signal
-
 
 def BETA(lookback, prices1, prices2):
     # Rolling correlation

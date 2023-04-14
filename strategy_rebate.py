@@ -11,13 +11,13 @@ from helper import *
 # Rebates are added on at the end of the day
 
 
-starting_power = 500000
+starting_power = 300000
 max_alloc = ((starting_power / 4) * 0.99) / 3
 # starting_power / number of tickers
 # multiply by 0.99 for some buffer
 # divide by 3 so 1 part for long allocation, 2 parts for short allocation
-max_lots = 50
-check_freq = 5
+max_lots = 12
+check_freq = 1
 order_size = 3  # NOTE: this is 3 lots which is 300 shares, so we earn 60 cents per trade.
 
 
@@ -41,10 +41,10 @@ def longTrades(trader: shift.Trader, ticker: str, endtime):
             price = (best_bid + best_ask) / 2
             spread = (best_ask - best_bid)
 
-            item = trader.get_portfolio_item(ticker)
-            current_value = item.get_long_shares() * price
+            # item = trader.get_portfolio_item(ticker)
+            # current_value = item.get_long_shares() * price
 
-            if max_alloc > current_value and max_lots > item.get_shares():
+            if max_alloc > trader.get_portfolio_item(ticker).get_long_shares()*price and max_lots*100 > abs(trader.get_portfolio_item(ticker).get_shares()):
                 price = best_bid
                 # If spread is this tight, then we should be able to place an order below the best_bid and still get filled
                 if spread < 0.02:
@@ -84,10 +84,10 @@ def shortTrades(trader: shift.Trader, ticker: str, endtime):
 
             spread = (best_ask - best_bid)
 
-            item = trader.get_portfolio_item(ticker)
-            current_value = item.get_short_shares() * price
+            # item = trader.get_portfolio_item(ticker)
+            # current_value = item.get_short_shares() * price
         
-            if 2*max_alloc > current_value and max_lots > item.get_shares():
+            if 2*max_alloc > trader.get_portfolio_item(ticker).get_short_shares()*price and max_lots*100 > abs(trader.get_portfolio_item(ticker).get_shares()):
                 price = best_ask
                 # If spread is this tight, then we should be able to place an order below the best_bid and still get filled
                 if spread < 0.02:
