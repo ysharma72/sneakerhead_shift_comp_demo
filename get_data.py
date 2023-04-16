@@ -8,7 +8,7 @@ from threading import Thread
 
 def main(trader):
     tickers = trader.get_stock_list()
-    check_frequency = 15
+    check_frequency = 5
     current = trader.get_last_trade_time()
     start_time = dt.datetime.combine(current, dt.time(9, 30, 0))
     end_time = dt.datetime.combine(current, dt.time(15, 0, 0))
@@ -37,7 +37,7 @@ def main(trader):
         sleep(check_frequency)
         
     print(big_df)
-    big_df.to_csv(f'order_book_data/{dt.date.today()}.csv')  # One dataframe per trading day
+    big_df.to_csv(f'order_book_data/{trader.get_last_trade_time().strftime("%Y_%m_%d")}.csv')  # One dataframe per trading day
     
 
 
@@ -66,7 +66,7 @@ def get_data(tickers, current_data):
         
 
 if __name__ == "__main__":
-    with shift.Trader("sneakerhead_test01") as trader:
+    with shift.Trader("sneakerhead_test06") as trader:
         trader.connect("initiator.cfg", "7nn7Y1F5aj")
         sleep(1)
         trader.sub_all_order_book()
