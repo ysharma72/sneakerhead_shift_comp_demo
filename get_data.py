@@ -8,17 +8,16 @@ from threading import Thread
 
 def main(trader):
     tickers = trader.get_stock_list()
-    check_frequency = 5
     current = trader.get_last_trade_time()
     start_time = dt.datetime.combine(current, dt.time(9, 30, 0))
-    end_time = dt.datetime.combine(current, dt.time(15, 0, 0))
+    end_time = dt.datetime.combine(current, dt.time(15, 45, 0))
     
     # start_time = current
     # end_time = start_time + timedelta(minutes=1)
 
     while trader.get_last_trade_time() < start_time or trader.get_last_trade_time() > end_time:
-        print("Waiting for market to open")
-        sleep(check_frequency)
+        if trader.get_last_trade_time().second == 0 and trader.is_connected():
+            print("Waiting for market to open")
 
 
     print("START")
@@ -28,16 +27,20 @@ def main(trader):
     current_data = dict.fromkeys(columns)
 
     big_df = pd.DataFrame(columns=pd.MultiIndex.from_product([tickers, lower_columns]))
+    big_df.to_csv(f'CLEAN_DATA/{trader.get_last_trade_time().strftime("%Y_%m_%d")}.csv', mode='a', header=True)
 
     while(trader.get_last_trade_time() < end_time):
-        
-        if trader.is_connected():
-            print(f"connected: {trader.get_last_trade_time()}")
+        sleep(1)
+        if trader.get_last_trade_time().second == 0 and trader.is_connected():
             big_df.loc[trader.get_last_trade_time()] = get_data(tickers, current_data)
-        sleep(check_frequency)
+            big_df.tail(1).to_csv(f'CLEAN_DATA/{trader.get_last_trade_time().strftime("%Y_%m_%d")}.csv', mode='a', header=False)
+            print(f"Connected: {trader.get_last_trade_time()}")
+            sleep(30)
+            
+        
         
     print(big_df)
-    big_df.to_csv(f'order_book_data/{trader.get_last_trade_time().strftime("%Y_%m_%d")}.csv')  # One dataframe per trading day
+    # big_df.to_csv(f'order_book_data_past_1/{trader.get_last_trade_time().strftime("%Y_%m_%d")}.csv')  # One dataframe per trading day
     
 
 
@@ -66,7 +69,7 @@ def get_data(tickers, current_data):
         
 
 if __name__ == "__main__":
-    with shift.Trader("sneakerhead_test06") as trader:
+    with shift.Trader("sneakerhead_test01") as trader:
         trader.connect("initiator.cfg", "7nn7Y1F5aj")
         sleep(1)
         trader.sub_all_order_book()
