@@ -30,12 +30,13 @@ def main(trader):
     big_df.to_csv(f'CLEAN_DATA/{trader.get_last_trade_time().strftime("%Y_%m_%d")}.csv', mode='a', header=True)
 
     while(trader.get_last_trade_time() < end_time):
-        sleep(1)
-        if trader.get_last_trade_time().second == 0 and trader.is_connected():
+        
+        if trader.get_last_trade_time().second % 5 == 0 and trader.is_connected():
             big_df.loc[trader.get_last_trade_time()] = get_data(tickers, current_data)
             big_df.tail(1).to_csv(f'CLEAN_DATA/{trader.get_last_trade_time().strftime("%Y_%m_%d")}.csv', mode='a', header=False)
             print(f"Connected: {trader.get_last_trade_time()}")
-            sleep(30)
+        
+        sleep(0.5)
             
         
         
@@ -69,7 +70,7 @@ def get_data(tickers, current_data):
         
 
 if __name__ == "__main__":
-    with shift.Trader("sneakerhead_test01") as trader:
+    with shift.Trader("sneakerhead_test05") as trader:
         trader.connect("initiator.cfg", "7nn7Y1F5aj")
         sleep(1)
         trader.sub_all_order_book()

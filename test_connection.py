@@ -13,7 +13,7 @@ from time import sleep
 '''
 
 if __name__ == '__main__':
-    with shift.Trader(f"sneakerhead_test06") as trader:
+    with shift.Trader(f"sneakerhead_test05") as trader:
         trader.connect(f"initiator.cfg", "7nn7Y1F5aj")
         sleep(2)
         print(f"Server Time: {trader.get_last_trade_time()}")

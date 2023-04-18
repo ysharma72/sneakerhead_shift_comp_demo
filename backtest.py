@@ -6,7 +6,7 @@ import os
 import numpy as np
 
 data = {}
-ignore_files = ["README.md", "2018_12_17.csv", "2018_12_21.csv", "2020_06_12.csv"]
+ignore_files = ["README.md"]
 # Get all files in directory (make sure your relative root is the project repository)
 for filename in os.scandir("CLEAN_DATA"):
     if filename.is_file() and filename.name not in ignore_files:
