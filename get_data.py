@@ -19,7 +19,6 @@ def main(trader):
         if trader.get_last_trade_time().second == 0 and trader.is_connected():
             print("Waiting for market to open")
 
-
     print("START")
 
     lower_columns = ["BID PRICE", "BID VOLUME", "BID TIME", "ASK PRICE", "ASK VOLUME", "ASK TIME"]

@@ -9,35 +9,35 @@ import os
 data = {}
 ignore_files = ["README.md"]
 # Get all files in directory (make sure your relative root is the project repository)
-for filename in os.scandir("RAW_DATA"):
-    if filename.is_file() and filename.name not in ignore_files:
-        df = pd.read_csv("RAW_DATA/" + filename.name, index_col=0, parse_dates=True, header=[0,1])
-        name = filename.name.split(".")[0]
-        data[name] = df
+# for filename in os.scandir("RAW_DATA/Week 2"):
+#     if filename.is_file() and filename.name not in ignore_files:
+#         df = pd.read_csv("RAW_DATA/Week 2/" + filename.name, index_col=0, parse_dates=True, header=[0,1])
+#         name = filename.name.split(".")[0]
+#         data[name] = df
 
 
-# df_2018_12_17 = pd.read_csv('RAW_DATA/2018_12_17.csv', index_col=0, header=[0, 1])
-# df_2018_12_21 = pd.read_csv('RAW_DATA/2018_12_21.csv', index_col=0, header=[0, 1])
-# df_2020_06_12 = pd.read_csv('RAW_DATA/2020_06_12.csv', index_col=0, header=[0, 1])
-# df_2020_06_19 = pd.read_csv('RAW_DATA/2020_06_19.csv', index_col=0, header=[0, 1])
-# df_2020_06_26 = pd.read_csv('RAW_DATA/2020_06_26.csv', index_col=0, header=[0, 1])
-# df_2020_10_30 = pd.read_csv('RAW_DATA/2020_10_30.csv', index_col=0, header=[0, 1])
+df_2018_06_15 = pd.read_csv('RAW_DATA/Week 2/2018_06_15.csv', index_col=0, header=[0, 1])
+df_2018_08_24 = pd.read_csv('RAW_DATA/Week 2/2018_08_24.csv', index_col=0, header=[0, 1])
+df_2018_09_21 = pd.read_csv('RAW_DATA/Week 2/2018_09_21.csv', index_col=0, header=[0, 1])
+df_2019_04_18 = pd.read_csv('RAW_DATA/Week 2/2019_04_18.csv', index_col=0, header=[0, 1])
+df_2019_11_15 = pd.read_csv('RAW_DATA/Week 2/2019_11_15.csv', index_col=0, header=[0, 1])
 
 # # dictionary of all data
-# data = {
-#     '2018_12_17': df_2018_12_17,
-#     '2018_12_21': df_2018_12_21,
-#     '2020_06_12': df_2020_06_12,
-#     '2020_06_19': df_2020_06_19,
-#     '2020_06_26': df_2020_06_26,
-#     '2020_10_30': df_2020_10_30
-# }
+data = {
+    '2018_06_15': df_2018_06_15,
+    '2018_08_24': df_2018_08_24,
+    '2018_09_21': df_2018_09_21,
+    '2019_04_18': df_2019_04_18,
+    '2019_11_15': df_2019_11_15
+}
 
 # print(data.keys())
 
 for k in data.keys():
     # Convert index of each dataframe to datetime
     data[k].index = pd.to_datetime(data[k].index)
+    data[k] = data[k][~data[k].index.duplicated(keep='first')]
+    data[k] = data[k][data[k].index.second % 5 == 0]
 
 
 # 2018-12-17 is secondly vs 5 second data so.... 
@@ -76,10 +76,10 @@ for k in tqdm(data.keys()):
             data[k][ticker, "VWAP_LOWER2"][i], _, data[k][ticker, "VWAP_UPPER2"][i] = VWAP(data[k][ticker, "BID PRICE"][:i], data[k][ticker, "ASK PRICE"][:i], data[k][ticker, "BID VOLUME"][:i], data[k][ticker, "ASK VOLUME"][:i], 0.2)
     
         # Create new columns for ATR
-        #TODO
+        # TODO
 
     # df.dropna(inplace=True)
     
     # Save the data to a csv
     data[k].sort_index(axis=1, inplace=True)
-    data[k].to_csv(f'CLEAN_DATA/{k}.csv')
+    data[k].to_csv(f'CLEAN_DATA/Week 2/{k}.csv')

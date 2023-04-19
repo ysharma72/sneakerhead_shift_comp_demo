@@ -8,9 +8,9 @@ import numpy as np
 data = {}
 ignore_files = ["README.md"]
 # Get all files in directory (make sure your relative root is the project repository)
-for filename in os.scandir("CLEAN_DATA"):
+for filename in os.scandir("CLEAN_DATA/Week 2"):
     if filename.is_file() and filename.name not in ignore_files:
-        df = pd.read_csv("CLEAN_DATA/" + filename.name, index_col=0, parse_dates=True, header=[0,1])
+        df = pd.read_csv("CLEAN_DATA/Week 2/" + filename.name, index_col=0, parse_dates=True, header=[0,1])
         name = filename.name.split(".")[0]
         data[name] = df
 print(data.keys())
@@ -36,7 +36,7 @@ trending_buy, trending_sell = False, False
 long_term_buy, long_term_sell = False, False
 
 
-df = data["2020_10_30"]["JPM"]
+df = data["2018_08_24"]["AAPL"]
 df["LTPosition"], df["TRPosition"] = 0, 0
 
 for row in range(len(df)):
