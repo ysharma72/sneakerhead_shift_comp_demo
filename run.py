@@ -9,7 +9,7 @@ from strategy_TI import *
 from strategy_rebate import *
 from strategy_rebate2 import *
 
-check_frequency = 1
+check_frequency = 5
 
 def main(trader):
     # keeps track of times for the simulation
@@ -17,7 +17,7 @@ def main(trader):
     current = trader.get_last_trade_time()
     # start_time1 = datetime.combine(current, dt.time(9, 30, 0))
     # end_time1 = datetime.combine(current, dt.time(9, 55, 0))
-    start_time2 = datetime.combine(current, dt.time(10, 00, 0))
+    start_time2 = datetime.combine(current, dt.time(9, 45, 0))
     end_time2 = datetime.combine(current, dt.time(15, 30, 0))
     # start_time2 = current
     # end_time2 = start_time2 + timedelta(minutes=10)
@@ -67,7 +67,7 @@ def main(trader):
     # # Rebate strategy for Volatile Market
 
     while trader.get_last_trade_time() < start_time2:
-        print("waiting to start at 10:00 AM")
+        print("waiting to start at 09:45 AM")
         sleep(check_frequency)
 
     # we track our overall initial profits/losses value to see how our strategy affects it
@@ -89,25 +89,25 @@ def main(trader):
         threads2.append(
             Thread(target=cancel_orders, args=(trader, ticker, end_time2))
         )
-        threads2.append(
-            Thread(target=manage_holdings, args=(trader, ticker, end_time2, -0.002, 0.004))
-        )
+        # threads2.append(
+        #     Thread(target=manage_holdings, args=(trader, ticker, end_time2, -0.002, 0.004))
+        # )
 
 
-    for ticker in tickers_rebate:
-        # initializes threads containing the strategy for each ticker
-        threads2.append(
-            Thread(target=shortTrades, args=(trader, ticker, end_time2))
-        )
-        threads2.append(
-            Thread(target=longTrades, args=(trader, ticker, end_time2))
-        )
-        threads2.append(
-            Thread(target=cancel_orders, args=(trader, ticker, end_time2))
-        )
-        threads2.append(
-            Thread(target=manage_holdings, args=(trader, ticker, end_time2, -0.002, 0.004))
-        )
+    # for ticker in tickers_rebate:
+    #     # initializes threads containing the strategy for each ticker
+    #     threads2.append(
+    #         Thread(target=shortTrades, args=(trader, ticker, end_time2))
+    #     )
+    #     threads2.append(
+    #         Thread(target=longTrades, args=(trader, ticker, end_time2))
+    #     )
+    #     threads2.append(
+    #         Thread(target=cancel_orders, args=(trader, ticker, end_time2))
+    #     )
+    #     threads2.append(
+    #         Thread(target=manage_holdings, args=(trader, ticker, end_time2, -0.002, 0.004))
+    #     )
     
 
     for thread in threads2:
@@ -120,7 +120,7 @@ def main(trader):
     while trader.get_last_trade_time() < end_time2:
 
         # Every 30 seconds, log current time
-        if count_ticks % 6 == 0:
+        if count_ticks % 2 == 0:
             print(f"Current time: {trader.get_last_trade_time()}")
             # Print current portfolio summary as well
             print("Buying Power\tTotal Shares\tTotal P&L\tTimestamp")
@@ -163,9 +163,9 @@ def main(trader):
         cancel_orders(trader, ticker)
         close_positions(trader, ticker)
 
-    for ticker in tickers_rebate:
-        cancel_orders(trader, ticker)
-        close_positions(trader, ticker)
+    # for ticker in tickers_rebate:
+    #     cancel_orders(trader, ticker)
+    #     close_positions(trader, ticker)
 
     sleep(check_frequency)
 
@@ -181,19 +181,19 @@ def main(trader):
 
         ordercounts_TI[ticker] = lots
 
-    for ticker in tickers_rebate:
-        lots = 0
-        for order in trader.get_submitted_orders():
-            if order.symbol == ticker:
-                status = trader.get_order(order.id).status
-                if status == shift.Order.Status.FILLED or status == shift.Order.Status.PARTIALLY_FILLED:
-                    lots += order.executed_size
+    # for ticker in tickers_rebate:
+    #     lots = 0
+    #     for order in trader.get_submitted_orders():
+    #         if order.symbol == ticker:
+    #             status = trader.get_order(order.id).status
+    #             if status == shift.Order.Status.FILLED or status == shift.Order.Status.PARTIALLY_FILLED:
+    #                 lots += order.executed_size
 
-        ordercounts_rebate[ticker] = lots
+    #     ordercounts_rebate[ticker] = lots
 
     
     print(f'Order counts TI: {ordercounts_TI}')
-    print(f'Order counts rebate: {ordercounts_rebate}')
+    # print(f'Order counts rebate: {ordercounts_rebate}')
 
     sleep(check_frequency)
 

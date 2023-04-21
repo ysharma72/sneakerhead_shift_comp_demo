@@ -11,7 +11,7 @@ import pandas_ta as ta
 # NOTE: for documentation on the different classes and methods used to interact with the SHIFT system, 
 # see: https://github.com/hanlonlab/shift-python/wiki
 
-check_frequency = 1
+check_frequency = 5
 max_bp = 1000000
 
 def calc_order_value(type, best_ask, best_bid, spread_percent):
@@ -85,10 +85,10 @@ def close_positions(trader, ticker):
             best_bid = best_price.get_bid_price()
             best_ask = best_price.get_ask_price()
             sell_vol = long_shares if long_shares < 3 else 3
-            order = shift.Order(shift.Order.Type.LIMIT_SELL,
-                                ticker, sell_vol, price=calc_order_value(shift.Order.Type.LIMIT_SELL, best_ask, best_bid, 0.5))  # we divide by 100 because orders are placed for lots of 100 shares
+            order = shift.Order(shift.Order.Type.MARKET_SELL,
+                                ticker, sell_vol)  # we divide by 100 because orders are placed for lots of 100 shares
             trader.submit_order(order)
-            sleep(check_frequency)
+            sleep(check_frequency*3)
             status = trader.get_order(order.id).status
             if status != shift.Order.Status.REJECTED and status != shift.Order.Status.FILLED:
                 print(f'Cancelling pending orders for: {ticker}')
@@ -110,10 +110,10 @@ def close_positions(trader, ticker):
             best_bid = best_price.get_bid_price()
             best_ask = best_price.get_ask_price()
             buy_vol = short_shares if short_shares < 3 else 3
-            order = shift.Order(shift.Order.Type.LIMIT_BUY,
-                                ticker, buy_vol, price=calc_order_value(shift.Order.Type.LIMIT_BUY, best_ask, best_bid, 0.5))
+            order = shift.Order(shift.Order.Type.MARKET_BUY,
+                                ticker, buy_vol)
             trader.submit_order(order)
-            sleep(check_frequency)
+            sleep(check_frequency*3)
             status = trader.get_order(order.id).status
             if status != shift.Order.Status.REJECTED and status != shift.Order.Status.FILLED:
                 print(f'Cancelling pending orders for: {ticker}')
