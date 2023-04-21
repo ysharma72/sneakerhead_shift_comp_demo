@@ -120,7 +120,7 @@ def main(trader):
     while trader.get_last_trade_time() < end_time2:
 
         # Every 30 seconds, log current time
-        if count_ticks % 2 == 0:
+        if count_ticks % 6 == 0:
             print(f"Current time: {trader.get_last_trade_time()}")
             # Print current portfolio summary as well
             print("Buying Power\tTotal Shares\tTotal P&L\tTimestamp")
