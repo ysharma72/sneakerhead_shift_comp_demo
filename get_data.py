@@ -69,7 +69,7 @@ def get_data(tickers, current_data):
         
 
 if __name__ == "__main__":
-    with shift.Trader("sneakerhead_test01") as trader:
+    with shift.Trader("sneakerhead_test06") as trader:
         trader.connect("initiator.cfg", "7nn7Y1F5aj")
         sleep(1)
         trader.sub_all_order_book()

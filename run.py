@@ -232,7 +232,7 @@ def main(trader):
 
 
 if __name__ == '__main__':
-    with shift.Trader("sneakerhead") as trader:
+    with shift.Trader("sneakerhead01") as trader:
         trader.connect("initiator.cfg", "7nn7Y1F5aj")
         sleep(1)
         trader.sub_all_order_book()

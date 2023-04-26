@@ -137,7 +137,7 @@ dates = list(data.keys())
 trending_buy, trending_sell = False, False
 long_term_buy, long_term_sell = False, False
 
-ticker = "CVX"
+ticker = "BA"
 
 for date in dates:
     df = data[date][ticker]
