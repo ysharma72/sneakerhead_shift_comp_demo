@@ -16,19 +16,20 @@ ignore_files = ["README.md"]
 #         data[name] = df
 
 
-df_2018_06_15 = pd.read_csv('RAW_DATA/Week 2/2018_06_15.csv', index_col=0, header=[0, 1])
-df_2018_08_24 = pd.read_csv('RAW_DATA/Week 2/2018_08_24.csv', index_col=0, header=[0, 1])
-df_2018_09_21 = pd.read_csv('RAW_DATA/Week 2/2018_09_21.csv', index_col=0, header=[0, 1])
-df_2019_04_18 = pd.read_csv('RAW_DATA/Week 2/2019_04_18.csv', index_col=0, header=[0, 1])
-df_2019_11_15 = pd.read_csv('RAW_DATA/Week 2/2019_11_15.csv', index_col=0, header=[0, 1])
-
+df_2018_02_05 = pd.read_csv('RAW_DATA/Week 3/2018_02_05.csv', index_col=0, header=[0, 1])
+df_2018_12_17 = pd.read_csv('RAW_DATA/Week 3/2018_12_17.csv', index_col=0, header=[0, 1])
+df_2020_02_24 = pd.read_csv('RAW_DATA/Week 3/2020_02_24.csv', index_col=0, header=[0, 1])
+df_2020_11_09 = pd.read_csv('RAW_DATA/Week 3/2020_11_09.csv', index_col=0, header=[0, 1])
+df_2021_02_25 = pd.read_csv('RAW_DATA/Week 3/2021_02_25.csv', index_col=0, header=[0, 1])
+df_2021_03_04 = pd.read_csv('RAW_DATA/Week 3/2021_03_04.csv', index_col=0, header=[0, 1])
 # # dictionary of all data
 data = {
-    '2018_06_15': df_2018_06_15,
-    '2018_08_24': df_2018_08_24,
-    '2018_09_21': df_2018_09_21,
-    '2019_04_18': df_2019_04_18,
-    '2019_11_15': df_2019_11_15
+    '2018_02_05': df_2018_02_05,
+    '2018_12_17': df_2018_12_17,
+    '2020_02_24': df_2020_02_24,
+    '2020_11_09': df_2020_11_09,
+    '2021_02_25': df_2021_02_25,
+    '2021_03_04': df_2021_03_04
 }
 
 # print(data.keys())

@@ -88,7 +88,7 @@ def close_positions(trader, ticker):
             order = shift.Order(shift.Order.Type.MARKET_SELL,
                                 ticker, sell_vol)  # we divide by 100 because orders are placed for lots of 100 shares
             trader.submit_order(order)
-            sleep(check_frequency*3)
+            sleep(check_frequency)
             status = trader.get_order(order.id).status
             if status != shift.Order.Status.REJECTED and status != shift.Order.Status.FILLED:
                 print(f'Cancelling pending orders for: {ticker}')
@@ -113,7 +113,7 @@ def close_positions(trader, ticker):
             order = shift.Order(shift.Order.Type.MARKET_BUY,
                                 ticker, buy_vol)
             trader.submit_order(order)
-            sleep(check_frequency*3)
+            sleep(check_frequency)
             status = trader.get_order(order.id).status
             if status != shift.Order.Status.REJECTED and status != shift.Order.Status.FILLED:
                 print(f'Cancelling pending orders for: {ticker}')

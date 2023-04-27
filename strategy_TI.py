@@ -9,7 +9,7 @@ import math
 import numpy as np
 
 
-starting_power = 700000
+starting_power = 1000000
 max_alloc = ((starting_power / 4) * 0.95) / 3
 max_lots = 18
 
@@ -22,7 +22,7 @@ def strategyTI(trader: shift.Trader, ticker: str, endtime):
     # strategy parameters
     check_freq = 5  # this iterates every 60 seconds
     last_90min = 300*(60//check_freq)  # 270 minutes from 10 AM - 2:30 PM (before last 90 mins of trading)
-    order_size = 3  # NOTE: this is 3 lots which is 300 shares.
+    order_size = 1  # NOTE: this is 3 lots which is 300 shares.
 
     # strategy variables  
     trending_buy, trending_sell = False, False
@@ -96,7 +96,7 @@ def strategyTI(trader: shift.Trader, ticker: str, endtime):
                 df.loc[trader.get_last_trade_time(), 'rsi'] = rsi
                 ma = CompareMA(9, 21, df.price)
                 df.loc[trader.get_last_trade_time(), 'ma'] = ma
-                vwap = VWAP(df.bids, df.asks, df.bid_vols, df.ask_vols, 1)
+                vwap = VWAP(df.bids, df.asks, df.bid_vols, df.ask_vols, 0.5)
                 df.loc[trader.get_last_trade_time(), 'vwap'] = vwap[1]
                 vwap_lower = vwap[0]
                 df.loc[trader.get_last_trade_time(), 'lower_vwap'] = vwap_lower
@@ -115,7 +115,7 @@ def strategyTI(trader: shift.Trader, ticker: str, endtime):
                 current_value_short = item.get_short_shares() * price
 
                 
-                if rsi < 40 and (2*max_alloc > current_value_short and max_lots*100 > abs(item.get_shares())):
+                if rsi > 60 and mid_price > vwap_upper and (2*max_alloc > current_value_short and max_lots*100 > abs(item.get_shares())):
                     print('LONG TERM RSI SELL ENTRY')
                     order = shift.Order(shift.Order.Type.MARKET_SELL, ticker, order_size)
                     print(f"TI: Selling {ticker} at {best_bid}")
@@ -125,7 +125,7 @@ def strategyTI(trader: shift.Trader, ticker: str, endtime):
                     orders[order] = swing_high+atr
                                   
 
-                elif rsi > 60 and (max_alloc > current_value_long and max_lots*100 > abs(item.get_shares())):
+                elif rsi < 30 and mid_price < vwap_lower and (max_alloc > current_value_long and max_lots*100 > abs(item.get_shares())):
                     print('LONG TERM RSI BUY ENTRY')
                     order = shift.Order(shift.Order.Type.MARKET_BUY, ticker, order_size)
                     print(f"TI: Buying {ticker} at {best_ask}")
@@ -200,9 +200,9 @@ def strategyTI(trader: shift.Trader, ticker: str, endtime):
             for order in trader.get_submitted_orders():
                 if order in orders:
                     if order.status == shift.Order.Status.FILLED and order.type == shift.Order.Type.MARKET_BUY:
-                        stop_order = shift.Order(shift.Order.Type.MARKET_SELL, ticker, order_size)
+                        stop_order = shift.Order(shift.Order.Type.LIMIT_SELL, ticker, order_size, orders[order])
                     elif order.status == shift.Order.Status.FILLED and order.type == shift.Order.Type.MARKET_SELL:
-                        stop_order = shift.Order(shift.Order.Type.MARKET_BUY, ticker, order_size)
+                        stop_order = shift.Order(shift.Order.Type.LIMIT_BUY, ticker, order_size, orders[order])
                     else: continue
                 
                     trader.submit_order(stop_order)

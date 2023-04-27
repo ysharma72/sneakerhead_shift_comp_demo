@@ -8,9 +8,9 @@ import numpy as np
 data = {}
 ignore_files = ["README.md"]
 # Get all files in directory (make sure your relative root is the project repository)
-for filename in os.scandir("CLEAN_DATA/Week 2"):
+for filename in os.scandir("CLEAN_DATA/Week 3"):
     if filename.is_file() and filename.name not in ignore_files:
-        df = pd.read_csv("CLEAN_DATA/Week 2/" + filename.name, index_col=0, parse_dates=True, header=[0,1])
+        df = pd.read_csv("CLEAN_DATA/Week 3/" + filename.name, index_col=0, parse_dates=True, header=[0,1])
         name = filename.name.split(".")[0]
         data[name] = df
 print(data.keys())
@@ -140,7 +140,10 @@ long_term_buy, long_term_sell = False, False
 ticker = "BA"
 
 for date in dates:
+
     df = data[date][ticker]
+    if len(df) < 3600:
+        continue
     # df = Strategy1(df)
     df = Strategy1(df)
     
@@ -162,6 +165,7 @@ for date in dates:
 
     # Graph it with plotly
     # interactive_plot(df[["LTPosition", "TRPosition"]], "Gayer Graph")
-    interactive_plot(df[["Profit", "Cumulative Returns"]], f"{ticker} on {date}")
+    interactive_plot(df[["Profit"]], f"{ticker} on {date}")
+    interactive_plot(df[["RETURNS"]], f"{ticker} on {date}")
     interactive_plot(df[["MID PRICE", "VWAP", "MA(9)", "MA(21)"]], f"{ticker} on {date}")
 
