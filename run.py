@@ -78,7 +78,7 @@ def main(trader):
     # in this example, we simultaneously and independantly run our trading alogirthm on ALL tickers
     # tickers = trader.get_stock_list()
     tickers_rebate = ["JPM", "AAPL", "BA", "CVX"]
-    tickers_TI = ["DIS", "JNJ", "PG", "WMT"]
+    tickers_TI = ["DIS", "JPM", "PG", "WMT"]
     print("START")
     
     for ticker in tickers_TI:
@@ -232,7 +232,7 @@ def main(trader):
 
 
 if __name__ == '__main__':
-    with shift.Trader("sneakerhead_test06") as trader:
+    with shift.Trader("sneakerhead") as trader:
         trader.connect("initiator.cfg", "7nn7Y1F5aj")
         sleep(1)
         trader.sub_all_order_book()
